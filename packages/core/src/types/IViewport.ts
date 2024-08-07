@@ -217,6 +217,18 @@ export type ViewPresentationSelector = {
   paletteLut?: boolean;
 };
 
+export type DataSetOptions = {
+  /**
+   * The group id is a volume, display set or other identification for the
+   * overall set of data.  If set, then two sets of images can be compared for
+   * equality by comparing the group id.
+   * For volumes, if set, the groupId must be the primary volumeId.
+   */
+  groupId?: string;
+  viewSelector?: ViewPresentationSelector;
+  viewReference?: ViewReferenceSpecifier;
+};
+
 /**
  * Viewport interface for cornerstone viewports
  */
@@ -333,8 +345,10 @@ interface IViewport {
   ): boolean;
   /** Gets the number of slices in the current camera orientation */
   getNumberOfSlices(): number;
-  /** Gets the current slice in the current camera orientation */
+  /** Gets the index of the current image, it is not guaranteed to be the slice index in the view, use getSliceIndex for positional information */
   getCurrentImageIdIndex(): number;
+  /** gets the positional slice location in the view, similar to scrollbar, the top image is 0, the bottom is getNumberOfSlices - 1 */
+  getSliceIndex(): number;
   /**
    * Gets a referenced image url of some sort - could be a real image id, or
    * could be a URL with parameters. Regardless it refers to the currently displaying
@@ -405,6 +419,14 @@ interface IViewport {
 
   _getCorners(bounds: Array<number>): Array<number>[];
   updateRenderingPipeline: () => void;
+  getTargetId?: () => string;
+
+  /**
+   * This is a wrapper for setVideo to allow generic behaviour
+   * @param dataIds - a set of data ids that make up the data viewport
+   * @param options - an optional object with view reference/specifier
+   */
+  setDataIds(dataIds: string[], options?: DataSetOptions): void;
 }
 
 /**

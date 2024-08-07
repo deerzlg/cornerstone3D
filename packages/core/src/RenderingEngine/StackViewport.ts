@@ -1601,6 +1601,9 @@ class StackViewport extends Viewport implements IStackViewport, IImagesLoader {
       return;
     }
     const imagePlaneModule = metaData.get(MetadataModules.IMAGE_PLANE, imageId);
+    if (!imagePlaneModule) {
+      return;
+    }
     const { imagePositionPatient, frameOfReferenceUID: FrameOfReferenceUID } =
       imagePlaneModule;
     let { rowCosines, columnCosines } = imagePlaneModule;
@@ -2757,7 +2760,7 @@ class StackViewport extends Viewport implements IStackViewport, IImagesLoader {
 
     const diff = vec3.subtract(vec3.create(), worldPos, origin);
 
-    const worldPoint: Point2 = [
+    const indexPoint: Point2 = [
       vec3.dot(diff, iVector) / spacing[0],
       vec3.dot(diff, jVector) / spacing[1],
     ];
@@ -2765,7 +2768,7 @@ class StackViewport extends Viewport implements IStackViewport, IImagesLoader {
     // pixel to canvas
     const canvasPoint = pixelToCanvas(
       this._cpuFallbackEnabledElement,
-      worldPoint
+      indexPoint
     );
     return canvasPoint;
   };
@@ -2881,6 +2884,14 @@ class StackViewport extends Viewport implements IStackViewport, IImagesLoader {
   };
 
   /**
+   * returns the slice index of the view
+   * @returns slice index
+   */
+  public getSliceIndex = (): number => {
+    return this.currentImageIdIndex;
+  };
+
+  /**
    * Checks to see if this target is or could be shown in this viewport
    */
   public isReferenceViewable(
@@ -2954,17 +2965,17 @@ class StackViewport extends Viewport implements IStackViewport, IImagesLoader {
     if (!viewRef) {
       return;
     }
-    const { referencedImageId, sliceIndex, volumeId } = viewRef;
+    const { referencedImageId, sliceIndex } = viewRef;
     if (
       typeof sliceIndex === 'number' &&
       referencedImageId &&
       referencedImageId === this.imageIds[sliceIndex]
     ) {
-      this.setImageIdIndex(sliceIndex);
+      this.scroll(sliceIndex - this.targetImageIdIndex);
     } else {
       const foundIndex = this.imageIds.indexOf(referencedImageId);
       if (foundIndex !== -1) {
-        this.setImageIdIndex(foundIndex);
+        this.scroll(foundIndex - this.targetImageIdIndex);
       } else {
         throw new Error('Unsupported - referenced image id not found');
       }

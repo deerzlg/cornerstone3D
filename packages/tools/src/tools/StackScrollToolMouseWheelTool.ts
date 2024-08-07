@@ -1,4 +1,4 @@
-import { getEnabledElement, utilities } from '@cornerstonejs/core';
+import { BaseVolumeViewport, getEnabledElement } from '@cornerstonejs/core';
 import { BaseTool } from './base';
 import { MouseWheelEventType } from '../types/EventTypes';
 import scroll from '../utilities/scroll';
@@ -34,8 +34,10 @@ class StackScrollMouseWheelTool extends BaseTool {
     const { viewport } = getEnabledElement(element);
     const delta = direction * (invert ? -1 : 1);
 
-    const targetId = this.getTargetId(viewport);
-    const volumeId = utilities.getVolumeId(targetId);
+    let volumeId;
+    if (viewport instanceof BaseVolumeViewport) {
+      volumeId = this.getTargetVolumeId(viewport);
+    }
 
     scroll(viewport, {
       delta,

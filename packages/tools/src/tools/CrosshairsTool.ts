@@ -54,27 +54,6 @@ import { CONSTANTS } from '@cornerstonejs/core';
 
 const { RENDERING_DEFAULTS } = CONSTANTS;
 
-// TODO: nested config is weird
-interface ToolConfiguration {
-  configuration?: {
-    getReferenceLineColor?: (viewportId: string) => string;
-    getReferenceLineControllable?: (viewportId: string) => boolean;
-    getReferenceLineDraggableRotatable?: (viewportId: string) => boolean;
-    getReferenceLineSlabThicknessControlsOn?: (viewportId: string) => boolean;
-    referenceLinesCenterGapRadius?: number;
-    shadow?: boolean;
-    autopan?: {
-      enabled: boolean;
-      panSize: number;
-    };
-    mobile?: {
-      enabled: boolean;
-      opacity: number;
-      handleRadius: number;
-    };
-  };
-}
-
 interface CrosshairsAnnotation extends Annotation {
   data: {
     handles: {
@@ -142,7 +121,7 @@ class CrosshairsTool extends AnnotationTool {
         shadow: true,
         // renders a colored circle on top right of the viewports whose color
         // matches the color of the reference line
-        viewportIndicators: true,
+        viewportIndicators: false,
 
         viewportIndicatorsConfig: {
           radius: 5,
@@ -319,7 +298,8 @@ class CrosshairsTool extends AnnotationTool {
 
   resetCrosshairs = () => {
     const viewportsInfo = this._getViewportsInfo();
-    viewportsInfo.forEach(({ viewportId, renderingEngineId }) => {
+    for (const viewportInfo of viewportsInfo) {
+      const { viewportId, renderingEngineId } = viewportInfo;
       const enabledElement = getEnabledElementByIds(
         viewportId,
         renderingEngineId
@@ -329,13 +309,13 @@ class CrosshairsTool extends AnnotationTool {
       const resetZoom = true;
       const resetToCenter = true;
       const resetRotation = true;
-      const supressEvents = true;
+      const suppressEvents = true;
       viewport.resetCamera(
         resetPan,
         resetZoom,
         resetToCenter,
         resetRotation,
-        supressEvents
+        suppressEvents
       );
       (viewport as Types.IVolumeViewport).resetSlabThickness();
       const { element } = viewport;
@@ -348,7 +328,7 @@ class CrosshairsTool extends AnnotationTool {
         removeAnnotation(annotations[0].annotationUID);
       }
       viewport.render();
-    });
+    }
 
     this.computeToolCenter(viewportsInfo);
   };
